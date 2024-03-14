@@ -18,4 +18,9 @@ class UserService
     {
         return $this->userRepository->create($data);
     }
+
+    public function findUserById($id)
+    {
+        return $this->userRepository->find($id);
+    }
 }

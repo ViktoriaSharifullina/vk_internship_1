@@ -1,18 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\QuestController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Маршруты для пользователей
+Route::post('/users', [UserController::class, 'store']);
+Route::get('/users/{id}', [UserController::class, 'show']);
+
+// Маршруты для заданий
+Route::post('/quests', [QuestController::class, 'store']);
+Route::get('/quests', [QuestController::class, 'index']);
+
+// Маршрут для выполнения задания
+Route::post('/complete-quest', [QuestController::class, 'complete']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\UserService;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
@@ -12,5 +13,32 @@ class UserController extends Controller
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
+    }
+
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'balance' => 'required|numeric',
+        ]);
+
+        $user = $this->userService->createUser($validatedData);
+
+        return response()->json($user, Response::HTTP_CREATED);
+    }
+
+    public function show($id)
+    {
+        try {
+            $user = $this->userService->findUserById($id);
+
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+            }
+
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

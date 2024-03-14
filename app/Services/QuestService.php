@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Quest;
 use App\Models\CompletedQuest;
+use Illuminate\Support\Facades\Log;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\QuestRepositoryInterface;
 use App\Repositories\Contracts\CompletedQuestRepositoryInterface;
@@ -32,6 +33,18 @@ class QuestService
 
     public function completeQuest($userId, $questId)
     {
+        Log::info("completeQuest");
+        $user = $this->userRepository->find($userId);
+        if (!$user) {
+            return ['success' => false, 'message' => 'User not found'];
+        }
+
+        $quest = $this->questRepository->find($questId);
+        if (!$quest) {
+            return ['success' => false, 'message' => 'Quest not found'];
+        }
+
+
         if ($this->completedQuestRepository->isQuestCompletedByUser($userId, $questId)) {
             return ['success' => false, 'message' => "This quest has already been completed by the user."];
         }
@@ -41,11 +54,13 @@ class QuestService
             'quest_id' => $questId
         ]);
 
-        $user = $this->userRepository->find($userId);
-        $quest = $this->questRepository->find($questId);
-
         $this->userRepository->updateBalance($user, $quest->cost);
 
         return ['success' => true];
+    }
+
+    public function getAllQuests()
+    {
+        return $this->questRepository->all();
     }
 }
