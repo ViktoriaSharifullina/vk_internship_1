@@ -6,5 +6,6 @@ use App\Models\Quest;
 
 interface QuestRepositoryInterface
 {
-    public function find($id): ?Quest;
+    public function find($id): Quest;
+    public function create(array $data): Quest;
 }

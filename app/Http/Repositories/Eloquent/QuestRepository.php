@@ -7,8 +7,13 @@ use App\Repositories\Contracts\QuestRepositoryInterface;
 
 class QuestRepository implements QuestRepositoryInterface
 {
-    public function find($id): ?Quest
+    public function find($id): Quest
     {
         return Quest::find($id);
+    }
+
+    public function create(array $data): Quest
+    {
+        return Quest::create($data);
     }
 }

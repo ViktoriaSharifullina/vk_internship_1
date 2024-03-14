@@ -5,55 +5,47 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Quest;
 use App\Models\CompletedQuest;
-use Illuminate\Support\Facades\DB;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\QuestRepositoryInterface;
+use App\Repositories\Contracts\CompletedQuestRepositoryInterface;
 
 class QuestService
 {
-    public function createQuest(array $data): Quest
+    protected $userRepository;
+    protected $questRepository;
+    protected $completedQuestRepository;
+
+    public function __construct(
+        UserRepositoryInterface $userRepository,
+        QuestRepositoryInterface $questRepository,
+        CompletedQuestRepositoryInterface $completedQuestRepository
+    ) {
+        $this->userRepository = $userRepository;
+        $this->questRepository = $questRepository;
+        $this->completedQuestRepository = $completedQuestRepository;
+    }
+
+    public function createQuest(array $data)
     {
-        return Quest::create($data);
+        return $this->questRepository->create($data);
     }
 
     public function completeQuest($userId, $questId)
     {
-        DB::beginTransaction();
-
-        try {
-            $user = User::findOrFail($userId);
-            $quest = Quest::findOrFail($questId);
-
-            if ($this->questAlreadyCompleted($userId, $questId)) {
-                throw new \Exception("This quest has already been completed by the user.");
-            }
-
-            $this->registerCompletedQuest($userId, $questId);
-            $this->updateUserBalance($user, $quest->cost);
-
-            DB::commit();
-
-            return ['success' => true];
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return ['success' => false, 'message' => $e->getMessage()];
+        if ($this->completedQuestRepository->isQuestCompletedByUser($userId, $questId)) {
+            return ['success' => false, 'message' => "This quest has already been completed by the user."];
         }
-    }
 
-    protected function questAlreadyCompleted($userId, $questId)
-    {
-        return CompletedQuest::where('user_id', $userId)->where('quest_id', $questId)->exists();
-    }
-
-    protected function registerCompletedQuest($userId, $questId)
-    {
-        CompletedQuest::create([
+        $this->completedQuestRepository->create([
             'user_id' => $userId,
             'quest_id' => $questId
         ]);
-    }
 
-    protected function updateUserBalance($user, $amount)
-    {
-        $user->balance += $amount;
-        $user->save();
+        $user = $this->userRepository->find($userId);
+        $quest = $this->questRepository->find($questId);
+
+        $this->userRepository->updateBalance($user, $quest->cost);
+
+        return ['success' => true];
     }
 }

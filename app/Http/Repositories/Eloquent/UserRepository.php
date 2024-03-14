@@ -17,4 +17,9 @@ class UserRepository implements UserRepositoryInterface
         $user->balance += $amount;
         return $user->save();
     }
+
+    public function create(array $data): User
+    {
+        return User::create($data);
+    }
 }
