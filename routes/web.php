@@ -8,6 +8,8 @@ use App\Http\Controllers\QuestController;
 // Маршруты для пользователей
 Route::post('/users', [UserController::class, 'store']);
 Route::get('/users/{id}', [UserController::class, 'show']);
+Route::get('/users/{userId}/completed-quests', [UserController::class, 'getUserCompletedQuestsAndBalance']);
+
 
 // Маршруты для заданий
 Route::post('/quests', [QuestController::class, 'store']);

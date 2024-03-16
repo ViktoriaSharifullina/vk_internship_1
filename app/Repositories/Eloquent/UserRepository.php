@@ -3,13 +3,18 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\User;
+use App\Exceptions\NotFoundException;
 use App\Repositories\Contracts\UserRepositoryInterface;
 
 class UserRepository implements UserRepositoryInterface
 {
-    public function find($id): ?User
+    public function findOrFail($id): ?User
     {
-        return User::find($id);
+        $entity = User::find($id);
+        if (!$entity) {
+            throw new NotFoundException('User not found');
+        }
+        return $entity;
     }
 
     public function updateBalance(User $user, $amount): bool

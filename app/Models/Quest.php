@@ -9,5 +9,5 @@ class Quest extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'cost'];
+    protected $fillable = ['name', 'cost', 'difficulty'];
 }

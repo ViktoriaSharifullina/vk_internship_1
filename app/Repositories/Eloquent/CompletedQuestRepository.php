@@ -3,8 +3,9 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\CompletedQuest;
-use App\Repositories\Contracts\CompletedQuestRepositoryInterface;
 use Illuminate\Support\Collection;
+use App\Exceptions\QuestAlreadyCompletedException;
+use App\Repositories\Contracts\CompletedQuestRepositoryInterface;
 
 class CompletedQuestRepository implements CompletedQuestRepositoryInterface
 {
@@ -13,15 +14,23 @@ class CompletedQuestRepository implements CompletedQuestRepositoryInterface
         return CompletedQuest::create($attributes);
     }
 
-    public function isQuestCompletedByUser($userId, $questId): bool
+    public function isQuestCompletedByUser($userId, $questId)
     {
-        return CompletedQuest::where('user_id', $userId)
+        $isCompleted = CompletedQuest::where('user_id', $userId)
             ->where('quest_id', $questId)
             ->exists();
+
+        if ($isCompleted) {
+            throw new QuestAlreadyCompletedException();
+        }
     }
 
     public function getCompletedQuestsByUser($userId): Collection
     {
-        return CompletedQuest::where('user_id', $userId)->get();
+        $completedQuests = CompletedQuest::with('quest')
+            ->where('user_id', $userId)
+            ->get();
+
+        return $completedQuests;
     }
 }

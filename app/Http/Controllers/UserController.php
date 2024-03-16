@@ -41,4 +41,15 @@ class UserController extends Controller
             return response()->json(['message' => 'An error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function getUserCompletedQuestsAndBalance($userId)
+    {
+        $data = $this->userService->getUserCompletedQuestsAndBalance($userId);
+
+        if ($data === null) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json($data);
+    }
 }

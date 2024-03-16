@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface QuestRepositoryInterface
 {
-    public function find($id): ?Quest;
+    public function findOrFail($id): ?Quest;
     public function create(array $data): Quest;
     public function all(): Collection;
 }
