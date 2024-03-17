@@ -9,6 +9,8 @@ use App\Models\CompletedQuest;
 use App\Services\QuestService;
 use PHPUnit\Framework\TestCase;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\InvalidDataException;
+use Illuminate\Database\Eloquent\Collection;
 use App\Exceptions\QuestAlreadyCompletedException;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\QuestRepositoryInterface;
@@ -30,6 +32,23 @@ class QuestServiceTest extends TestCase
         $this->completedQuestRepositoryMock = Mockery::mock(CompletedQuestRepositoryInterface::class);
 
         $this->questService = new QuestService($this->userRepositoryMock, $this->questRepositoryMock, $this->completedQuestRepositoryMock);
+    }
+
+    private function setUpUserMock($userId = 1, $balance = 0)
+    {
+        $userMock = Mockery::mock(User::class);
+        $userMock->shouldReceive('getAttribute')->with('balance')->andReturn($balance);
+        $this->userRepositoryMock->shouldReceive('findOrFail')->with($userId)->andReturn($userMock);
+        return $userMock;
+    }
+
+    private function setUpQuestMock($questId = 1, $cost = 100, $difficulty = 'normal')
+    {
+        $questMock = Mockery::mock(Quest::class)->makePartial();
+        $questMock->cost = $cost;
+        $questMock->difficulty = $difficulty;
+        $this->questRepositoryMock->shouldReceive('findOrFail')->with($questId)->andReturn($questMock);
+        return $questMock;
     }
 
     public function testCreateQuest()
@@ -62,27 +81,14 @@ class QuestServiceTest extends TestCase
         $difficulty = 'normal';
         $reward = 120;
 
-        $userMock = Mockery::mock(User::class);
-        $userMock->shouldReceive('getAttribute')->with('balance')->andReturn(0);
+        $this->setUpUserMock($userId, 0);
 
-        $questMock = Mockery::mock(Quest::class)->makePartial();
-        $questMock->cost = $baseCost;
-        $questMock->difficulty = $difficulty;
-
-        $this->userRepositoryMock->shouldReceive('findOrFail')
-            ->once()
-            ->with($userId)
-            ->andReturn($userMock);
+        $this->setUpQuestMock($questId, $baseCost, $difficulty);
 
         $this->userRepositoryMock->shouldReceive('updateBalance')
             ->once()
             ->with(Mockery::type(User::class), $reward)
             ->andReturn(true);
-
-        $this->questRepositoryMock->shouldReceive('findOrFail')
-            ->once()
-            ->with($questId)
-            ->andReturn($questMock);
 
         $this->completedQuestRepositoryMock->shouldReceive('isQuestCompletedByUser')
             ->once()
@@ -109,9 +115,11 @@ class QuestServiceTest extends TestCase
         $userId = 1;
         $questId = 999;
 
-        $this->userRepositoryMock->shouldReceive('findOrFail')->with($userId)->andReturn(Mockery::mock(User::class));
+        $this->setUpUserMock($userId);
 
-        $this->questRepositoryMock->shouldReceive('findOrFail')->with($questId)->andThrow(new NotFoundException('Quest not found'));
+        $this->questRepositoryMock->shouldReceive('findOrFail')
+            ->with($questId)
+            ->andThrow(new NotFoundException('Quest not found'));
 
         $result = $this->questService->completeQuest($userId, $questId);
 
@@ -125,7 +133,9 @@ class QuestServiceTest extends TestCase
         $userId = 999;
         $questId = 1;
 
-        $this->userRepositoryMock->shouldReceive('findOrFail')->with($userId)->andThrow(new NotFoundException('User not found'));
+        $this->userRepositoryMock->shouldReceive('findOrFail')
+            ->with($userId)
+            ->andThrow(new NotFoundException('User not found'));
 
         $result = $this->questService->completeQuest($userId, $questId);
 
@@ -139,11 +149,9 @@ class QuestServiceTest extends TestCase
         $userId = 1;
         $questId = 1;
 
-        $userMock = Mockery::mock(User::class);
-        $questMock = Mockery::mock(Quest::class);
+        $this->setUpUserMock($userId, 0);
 
-        $this->userRepositoryMock->shouldReceive('findOrFail')->with($userId)->andReturn($userMock);
-        $this->questRepositoryMock->shouldReceive('findOrFail')->with($questId)->andReturn($questMock);
+        $this->setUpQuestMock($questId);
 
         $this->completedQuestRepositoryMock->shouldReceive('isQuestCompletedByUser')
             ->with($userId, $questId)
@@ -153,7 +161,25 @@ class QuestServiceTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertFalse($result['success']);
-        $this->assertEquals("This quest has already been completed by the user.", $result['message']);
+        $this->assertEquals("This quest has already been completed by the user", $result['message']);
+    }
+
+    public function testGetAllQuestsReturnsCorrectQuests()
+    {
+        $questsCollection = collect([
+            new Quest(['name' => 'Quest 1', 'cost' => 100, 'difficulty' => 'easy']),
+            new Quest(['name' => 'Quest 2', 'cost' => 200, 'difficulty' => 'hard'])
+        ]);
+
+        $this->questRepositoryMock->shouldReceive('all')
+            ->once()
+            ->andReturn($questsCollection);
+
+        $quests = $this->questService->getAllQuests();
+
+        $this->assertCount(2, $quests);
+        $this->assertEquals('Quest 1', $quests->first()->name);
+        $this->assertEquals('Quest 2', $quests->last()->name);
     }
 
     public function testRewardCalculation()
@@ -172,6 +198,18 @@ class QuestServiceTest extends TestCase
 
         $expertQuest = new Quest(['cost' => 100, 'difficulty' => 'none']);
         $this->assertEquals(100,  $this->questService->calculateReward($expertQuest));
+    }
+
+    public function testGetAllQuestsReturnsEmptyArrayWhenNoQuestsAvailable()
+    {
+        $this->questRepositoryMock->shouldReceive('all')
+            ->once()
+            ->andReturn(Collection::make([]));
+
+        $quests = $this->questService->getAllQuests();
+
+        $this->assertInstanceOf(Collection::class, $quests);
+        $this->assertTrue($quests->isEmpty());
     }
 
     protected function tearDown(): void

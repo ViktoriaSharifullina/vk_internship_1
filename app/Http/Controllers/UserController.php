@@ -29,21 +29,18 @@ class UserController extends Controller
 
     public function show($id)
     {
-        try {
-            $user = $this->userService->findUserById($id);
+        $user = $this->userService->findUserById($id);
 
-            if (!$user) {
-                return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
-            }
-
-            return response()->json($user);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
         }
+
+        return response()->json($user);
     }
 
     public function getUserCompletedQuestsAndBalance($userId)
     {
+
         $data = $this->userService->getUserCompletedQuestsAndBalance($userId);
 
         if ($data === null) {

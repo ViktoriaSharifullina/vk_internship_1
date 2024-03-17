@@ -12,7 +12,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $entity = User::find($id);
         if (!$entity) {
-            throw new NotFoundException('User not found');
+            throw new NotFoundException();
         }
         return $entity;
     }

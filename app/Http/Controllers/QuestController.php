@@ -21,6 +21,7 @@ class QuestController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'cost' => 'required|numeric|min:0',
+            'difficulty' => 'required|string|in:easy,medium,hard,expert',
         ]);
 
         $quest = $this->questService->createQuest($validatedData);

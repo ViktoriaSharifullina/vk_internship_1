@@ -16,4 +16,4 @@ Route::post('/quests', [QuestController::class, 'store']);
 Route::get('/quests', [QuestController::class, 'index']);
 
 // Маршрут для выполнения задания
-Route::post('/complete-quest', [QuestController::class, 'complete']);
+Route::post('/quests/complete', [QuestController::class, 'complete']);
