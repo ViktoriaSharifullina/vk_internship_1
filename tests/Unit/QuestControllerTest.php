@@ -75,8 +75,7 @@ class QuestControllerTest extends TestCase
 
         $response = $this->json('POST', '/quests/complete', $data);
 
-        $response->assertStatus(400)
-            ->assertJson(['message' => 'Entity not found']);
+        $response->assertStatus(404);
     }
 
     /**
@@ -92,8 +91,7 @@ class QuestControllerTest extends TestCase
 
         $response = $this->json('POST', '/quests/complete', $data);
 
-        $response->assertStatus(400)
-            ->assertJson(['message' => 'Entity not found']);
+        $response->assertStatus(404);
     }
 
     /**

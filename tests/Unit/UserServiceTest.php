@@ -93,15 +93,17 @@ class UserServiceTest extends TestCase
 
     public function testGetUserCompletedQuestsAndBalanceUserNotFound()
     {
-        $userId = 1;
-        $this->userRepositoryMock->shouldReceive('findOrFail')
+        $this->expectException(ModelNotFoundException::class);
+
+        $userId = 999999;
+
+        $this->userRepositoryMock
+            ->shouldReceive('findOrFail')
             ->once()
             ->with($userId)
-            ->andThrow(new ModelNotFoundException);
+            ->andThrow(ModelNotFoundException::class);
 
-        $result = $this->userService->getUserCompletedQuestsAndBalance($userId);
-
-        $this->assertNull($result);
+        $this->userService->getUserCompletedQuestsAndBalance($userId);
     }
 
     protected function tearDown(): void

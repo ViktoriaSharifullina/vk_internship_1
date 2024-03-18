@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Exceptions\QuestAlreadyCompletedException;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\QuestRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Repositories\Contracts\CompletedQuestRepositoryInterface;
 
 class QuestServiceTest extends TestCase
@@ -114,17 +115,17 @@ class QuestServiceTest extends TestCase
         $userId = 1;
         $questId = 999;
 
-        $this->setUpUserMock($userId);
+        $this->userRepositoryMock->shouldReceive('findOrFail')
+            ->with($userId)
+            ->andReturn(new User);
 
         $this->questRepositoryMock->shouldReceive('findOrFail')
             ->with($questId)
-            ->andThrow(new NotFoundException('Quest not found'));
+            ->andThrow(ModelNotFoundException::class);
 
-        $result = $this->questService->completeQuest($userId, $questId);
+        $this->expectException(ModelNotFoundException::class);
 
-        $this->assertIsArray($result);
-        $this->assertFalse($result['success']);
-        $this->assertEquals('Quest not found', $result['message']);
+        $this->questService->completeQuest($userId, $questId);
     }
 
     public function testCompleteQuestUserNotFound()
@@ -134,13 +135,10 @@ class QuestServiceTest extends TestCase
 
         $this->userRepositoryMock->shouldReceive('findOrFail')
             ->with($userId)
-            ->andThrow(new NotFoundException('User not found'));
+            ->andThrow(ModelNotFoundException::class);
 
-        $result = $this->questService->completeQuest($userId, $questId);
-
-        $this->assertIsArray($result);
-        $this->assertFalse($result['success']);
-        $this->assertEquals('User not found', $result['message']);
+        $this->expectException(ModelNotFoundException::class);
+        $this->questService->completeQuest($userId, $questId);
     }
 
     public function testCompleteQuestAlreadyCompleted()
@@ -154,13 +152,10 @@ class QuestServiceTest extends TestCase
 
         $this->completedQuestRepositoryMock->shouldReceive('isQuestCompletedByUser')
             ->with($userId, $questId)
-            ->andThrow(new QuestAlreadyCompletedException());
+            ->andThrow(QuestAlreadyCompletedException::class);
 
-        $result = $this->questService->completeQuest($userId, $questId);
-
-        $this->assertIsArray($result);
-        $this->assertFalse($result['success']);
-        $this->assertEquals("This quest has already been completed by the user", $result['message']);
+        $this->expectException(QuestAlreadyCompletedException::class);
+        $this->questService->completeQuest($userId, $questId);
     }
 
     public function testGetAllQuestsReturnsCorrectQuests()

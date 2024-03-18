@@ -8,7 +8,6 @@ class InvalidDataException extends Exception
 {
     public function __construct($message = "Invalid data provided", $code = 0, Exception $previous = null)
     {
-        // Вызов конструктора базового класса
         parent::__construct($message, $code, $previous);
     }
 

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Services\UserService;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller
 {
@@ -35,24 +36,21 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = $this->userService->findUserById($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        try {
+            $user = $this->userService->findUserById($id);
+            return response()->json($user);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
-
-        return response()->json($user);
     }
 
     public function getUserCompletedQuestsAndBalance($userId)
     {
-
-        $data = $this->userService->getUserCompletedQuestsAndBalance($userId);
-
-        if ($data === null) {
-            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        try {
+            $data = $this->userService->getUserCompletedQuestsAndBalance($userId);
+            return response()->json($data);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], Response::HTTP_NOT_FOUND);
         }
-
-        return response()->json($data);
     }
 }

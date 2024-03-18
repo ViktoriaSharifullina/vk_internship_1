@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\User;
 use App\Exceptions\NotFoundException;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -12,7 +13,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $entity = User::find($id);
         if (!$entity) {
-            throw new NotFoundException();
+            throw (new ModelNotFoundException())->setModel(User::class, $id);
         }
         return $entity;
     }

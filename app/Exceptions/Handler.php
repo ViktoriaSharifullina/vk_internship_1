@@ -39,11 +39,15 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        if ($exception instanceof \App\Exceptions\NotFoundException) {
+        if ($exception instanceof NotFoundException) {
             return response()->json(['message' => $exception->getMessage()], $exception->getCode());
         }
 
-        if ($exception instanceof NotFoundException) {
+        if ($exception instanceof QuestAlreadyCompletedException) {
+            return response()->json(['message' => $exception->getMessage()], $exception->getCode());
+        }
+
+        if ($exception instanceof QuestAlreadyCompletedException) {
             return response()->json(['message' => $exception->getMessage()], $exception->getCode());
         }
 

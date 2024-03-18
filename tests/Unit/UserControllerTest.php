@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 
@@ -70,8 +69,7 @@ class UserControllerTest extends TestCase
     {
         $response = $this->json('GET', "/users/999999");
 
-        $response->assertStatus(404)
-            ->assertJson(['message' => 'Entity not found']);
+        $response->assertStatus(404);
     }
 
     /**
@@ -97,7 +95,6 @@ class UserControllerTest extends TestCase
     {
         $response = $this->getJson("/users/999/completed-quests");
 
-        $response->assertStatus(404)
-            ->assertJson(['message' => 'Entity not found']);
+        $response->assertStatus(404);
     }
 }

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Services\QuestService;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
+use App\Exceptions\QuestAlreadyCompletedException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class QuestController extends Controller
 {
@@ -41,15 +43,15 @@ class QuestController extends Controller
             'quest_id' => 'required',
         ]);
 
-        $result = $this->questService->completeQuest($validated['user_id'], $validated['quest_id']);
+        try {
+            $result = $this->questService->completeQuest($validated['user_id'], $validated['quest_id']);
 
-
-        if (!$result['success']) {
-            return response()->json(['message' => $result['message']], 400);
+            return response()->json(['message' => 'Quest completed successfully'], Response::HTTP_CREATED);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Entity not found'], 404);
+        } catch (QuestAlreadyCompletedException $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         }
-
-
-        return response()->json(['message' => 'Quest completed successfully'], Response::HTTP_CREATED);
     }
 
     public function index()

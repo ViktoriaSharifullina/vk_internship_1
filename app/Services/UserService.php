@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Exceptions\NotFoundException;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Repositories\Contracts\CompletedQuestRepositoryInterface;
@@ -27,28 +28,19 @@ class UserService
 
     public function findUserById($id)
     {
-        try {
-            $user = $this->userRepository->findOrFail($id);
-            return $user;
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        return $this->userRepository->findOrFail($id);
     }
 
     public function getUserCompletedQuestsAndBalance($userId)
     {
-        try {
-            $user = $this->userRepository->findOrFail($userId);
+        $user = $this->userRepository->findOrFail($userId);
 
-            $completedQuests = $this->completedQuestRepository->getCompletedQuestsByUser($userId);
-            $balance = $user->balance;
+        $completedQuests = $this->completedQuestRepository->getCompletedQuestsByUser($userId);
+        $balance = $user->balance;
 
-            return [
-                'completedQuests' => $completedQuests,
-                'balance' => $balance,
-            ];
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        return [
+            'completedQuests' => $completedQuests,
+            'balance' => $balance,
+        ];
     }
 }

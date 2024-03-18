@@ -3,9 +3,9 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Quest;
-use App\Exceptions\NotFoundException;
 use Illuminate\Support\Collection;
 use App\Repositories\Contracts\QuestRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class QuestRepository implements QuestRepositoryInterface
 {
@@ -13,7 +13,7 @@ class QuestRepository implements QuestRepositoryInterface
     {
         $entity = Quest::find($id);
         if (!$entity) {
-            throw new NotFoundException();
+            throw (new ModelNotFoundException())->setModel(Quest::class, $id);
         }
         return $entity;
     }

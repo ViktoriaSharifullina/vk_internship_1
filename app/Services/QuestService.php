@@ -2,11 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Quest;
-use App\Models\CompletedQuest;
-use Illuminate\Support\Facades\Log;
-use App\Exceptions\NotFoundException;
 use App\Exceptions\QuestAlreadyCompletedException;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\QuestRepositoryInterface;
@@ -35,27 +31,23 @@ class QuestService
 
     public function completeQuest($userId, $questId)
     {
-        try {
-            $user = $this->userRepository->findOrFail($userId);
-            $quest = $this->questRepository->findOrFail($questId);
+        $user = $this->userRepository->findOrFail($userId);
+        $quest = $this->questRepository->findOrFail($questId);
 
-            $this->completedQuestRepository->isQuestCompletedByUser($userId, $questId);
-            $reward = $this->calculateReward($quest);
-
-            $this->completedQuestRepository->create([
-                'user_id' => $userId,
-                'quest_id' => $questId
-            ]);
-
-            $this->userRepository->updateBalance($user, $reward);
-
-            return ['success' => true];
-        } catch (NotFoundException $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        } catch (QuestAlreadyCompletedException $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
+        if ($this->completedQuestRepository->isQuestCompletedByUser($userId, $questId)) {
+            throw new QuestAlreadyCompletedException('This quest has already been completed by the user.');
         }
+
+        $reward = $this->calculateReward($quest);
+        $this->completedQuestRepository->create([
+            'user_id' => $userId,
+            'quest_id' => $questId
+        ]);
+        $this->userRepository->updateBalance($user, $reward);
+
+        return ['success' => true];
     }
+
 
     public function getAllQuests()
     {
