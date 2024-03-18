@@ -1,66 +1,185 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# REST API Сервис
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Небольшой REST API сервис, учитывающий выполнение заданий пользователями. Система позволяет добавлять, просматривать и отмечать задания как выполненные, причём каждое задание имеет установленный уровень сложности. В зависимости от этого уровня, при выполнении задания пользователь получает баллы, рассчитываемые как базовая стоимость задания, умноженная на коэффициент сложности.
 
-## About Laravel
+## Технологический стек
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Php
+- Laravel
+- Docker
+- MySQL
+- Nginx
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Требования
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Перед началом работы убедитесь, что у вас установлены:
 
-## Learning Laravel
+- Docker
+- Docker Compose
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Запуск проекта
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+1. Клонируйте репозиторий:
+   ```bash
+   git clone git@github.com:ViktoriaSharifullina/vk_internship_1.git
+   cd vk_internship_1
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. Соберите, создайте и запустите контейнер:
+   ```bash
+   docker-compose build
+   docker-compose up -d
 
-## Laravel Sponsors
+3. Выполните миграции базы данных:
+   ```bash
+   docker-compose exec app php artisan migrate
+   
+## Тестирование
+Чтобы запустить unit тесты, используйте следующую команду:
+  ```bash
+  docker-compose exec app bash
+  php artisan test
+```
+## API Endpoints
+### Пользователи
+#### Создание пользователя
+URL: `http://localhost:8080/users`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Метод: POST
 
-### Premium Partners
+**Тело запроса:**
+```json
+{
+    "name": "Test User",
+    "balance": 0
+}
+```
+**Тело ответа**
+```json
+{
+    "name": "Test User",
+    "balance": 0,
+    "updated_at": "2024-03-18T10:59:41.000000Z",
+    "created_at": "2024-03-18T10:59:41.000000Z",
+    "id": 1
+}
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+#### Получение данных пользователя
+URL: `http://localhost:8080/users/{userId}`
 
-## Contributing
+Метод: Get
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Тело ответа**
+```json
+{
+    "id": 1,
+    "name": "Test User",
+    "balance": "0.00",
+    "created_at": "2024-03-18T10:59:41.000000Z",
+    "updated_at": "2024-03-18T10:59:41.000000Z"
+}
+```
 
-## Code of Conduct
+#### Получить задания, выполненные пользователем, и баланс
+URL: `http://localhost:8080//users/{userId}/completed-quests`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Метод: Get
 
-## Security Vulnerabilities
+**Тело ответа**
+```json
+{
+    "completedQuests": [
+        {
+            "id": 1,
+            "user_id": 1,
+            "quest_id": 1,
+            "created_at": null,
+            "updated_at": null,
+            "quest": {
+                "id": 7,
+                "name": "Test Quest 1",
+                "cost": "350.00",
+                "created_at": "2024-03-18T13:34:55.000000Z",
+                "updated_at": "2024-03-18T13:34:55.000000Z",
+                "difficulty": "expert"
+            }
+        }
+    ],
+    "balance": "700.00"
+}
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Задания
 
-## License
+#### Получить список всех заданий
+URL: `http://localhost:8080/quests`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Метод: Get
+
+**Тело ответа**
+```json
+[
+    {
+        "id": 1,
+        "name": "Test Quest 1",
+        "cost": "350.00",
+        "created_at": "2024-03-18T13:34:55.000000Z",
+        "updated_at": "2024-03-18T13:34:55.000000Z",
+        "difficulty": "expert"
+    },
+    {
+        "id": 2,
+        "name": "Test Quest 2",
+        "cost": "50.00",
+        "created_at": "2024-03-18T13:41:25.000000Z",
+        "updated_at": "2024-03-18T13:41:25.000000Z",
+        "difficulty": "easy"
+    }
+]
+```
+
+#### Создание задания
+URL: `http://localhost:8080/quests`
+
+Метод: POST
+
+**Тело запроса:**
+```json
+{
+  "name": "Test Quest 1",
+  "cost": 350,
+  "difficulty": "expert"
+}
+```
+**Тело ответа**
+```json
+{
+    "name": "Test Quest 1",
+    "cost": 350,
+    "difficulty": "expert",
+    "updated_at": "2024-03-18T13:34:55.000000Z",
+    "created_at": "2024-03-18T13:34:55.000000Z",
+    "id": 1
+}
+```
+
+#### Выполнение задания пользователем
+URL: `http://localhost:8080/quests/complete`
+
+Метод: POST
+
+**Тело запроса:**
+```json
+{
+    "user_id" : 7,
+    "quest_id" : 7
+}
+```
+**Тело ответа**
+```json
+{
+    "message": "Quest completed successfully"
+}
+```
+
+
