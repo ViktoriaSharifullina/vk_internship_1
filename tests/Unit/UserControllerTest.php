@@ -43,13 +43,7 @@ class UserControllerTest extends TestCase
         $response = $this->json('POST', '/users', $invalidUserData);
 
         $response->assertStatus(422);
-        $response->assertJsonStructure([
-            'message',
-            'errors' => [
-                'name',
-                'balance',
-            ],
-        ]);
+        $response->assertJsonValidationErrors(['name', 'balance']);
     }
 
     /**

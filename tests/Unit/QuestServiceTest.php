@@ -9,7 +9,6 @@ use App\Models\CompletedQuest;
 use App\Services\QuestService;
 use PHPUnit\Framework\TestCase;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\InvalidDataException;
 use Illuminate\Database\Eloquent\Collection;
 use App\Exceptions\QuestAlreadyCompletedException;
 use App\Repositories\Contracts\UserRepositoryInterface;

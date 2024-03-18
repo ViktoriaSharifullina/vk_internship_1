@@ -34,14 +34,14 @@ class QuestControllerTest extends TestCase
     public function testStoreInvalidQuest()
     {
         $invalidQuestData = [
-            'name' => '',
             'cost' => 'not-a-number',
+            'difficulty' => 'invalid'
         ];
 
         $response = $this->json('POST', '/quests', $invalidQuestData);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'cost']);
+            ->assertJsonValidationErrors(['name', 'cost', 'difficulty']);
     }
 
     /**

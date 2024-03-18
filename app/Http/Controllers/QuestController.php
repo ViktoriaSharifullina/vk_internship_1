@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\QuestService;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class QuestController extends Controller
@@ -18,12 +18,17 @@ class QuestController extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'cost' => 'required|numeric|min:0',
-            'difficulty' => 'required|string|in:easy,medium,hard,expert',
+            'cost' => 'required|numeric',
+            'difficulty' => 'required|string|in:easy,hard,normal,expert'
         ]);
 
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validation failed', 'errors' => $validator->errors()], 422);
+        }
+
+        $validatedData = $validator->validated();
         $quest = $this->questService->createQuest($validatedData);
 
         return response()->json($quest, Response::HTTP_CREATED);
